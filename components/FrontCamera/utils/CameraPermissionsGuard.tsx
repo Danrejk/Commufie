@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, Button, Linking } from 'react-native';
+import { StyleSheet, View, Linking } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 
-export const CameraPermissionsGuard = ({ children }: { children: React.ReactNode }) => {
+interface CameraPermissionsGuardProps {
+  children: React.ReactNode;
+}
+
+export const CameraPermissionsGuard: React.FC<CameraPermissionsGuardProps> = ({ children }) => {
   const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
@@ -10,53 +16,53 @@ export const CameraPermissionsGuard = ({ children }: { children: React.ReactNode
     if (permission && !permission.granted && permission.canAskAgain) {
       requestPermission();
     }
-  }, [permission]);
+  }, [permission, requestPermission]);
 
   if (!permission) {
     return <View style={styles.container} />;
   }
 
-  if (permission.granted) {
-    return <>{children}</>;
+  // permission denied
+  if (!permission.granted) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text className="text-white text-base mb-4 text-center">
+          Camera permission is required.
+        </Text>
+
+        {permission.canAskAgain ? (
+          <Button onPress={requestPermission}>
+            <ButtonText>Allow Camera Access</ButtonText>
+          </Button>
+        ) : (
+          <View style={styles.fallbackContainer}>
+            <Text className="text-neutral-400 text-sm mb-4 text-center">
+              Permission was denied. Please enable it in system settings.
+            </Text>
+            <Button variant="outline" onPress={() => Linking.openSettings()}>
+              <ButtonText>Open Settings</ButtonText>
+            </Button>
+          </View>
+        )}
+      </View>
+    );
   }
 
-  // permission denied
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Camera access is required.</Text>
-
-      {permission.canAskAgain ? (
-        <Button title="Allow Camera Access" onPress={requestPermission} />
-      ) : (
-        <>
-          <Text style={styles.subtext}>
-            Permission was denied - enable it in system settings
-          </Text>
-          <Button title="Open Settings" onPress={() => Linking.openSettings()} />
-        </>
-      )}
-    </View>
-  );
+  return <View style={styles.container}>{children}</View>;
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
   },
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtext: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 16,
+  fallbackContainer: {
+    alignItems: 'center',
   },
 });

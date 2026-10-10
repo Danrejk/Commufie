@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { CameraPermissionsGuard } from "./utils/CameraPermissionsGuard";
+import { Button, ButtonText } from '@/components/ui/button';
 
 interface FrontCameraProps {
   onPhotoTaken?: (uri: string) => void;
@@ -9,7 +9,6 @@ interface FrontCameraProps {
 
 export const FrontCamera: React.FC<FrontCameraProps> = ({ onPhotoTaken }) => {
   const cameraRef = useRef<CameraView>(null);
-
 
   const handleCapture = async () => {
     const photo = await cameraRef.current?.takePictureAsync();
@@ -20,10 +19,17 @@ export const FrontCamera: React.FC<FrontCameraProps> = ({ onPhotoTaken }) => {
 
   return (
     <View style={styles.container}>
-      <CameraPermissionsGuard>
-        <CameraView ref={cameraRef} facing="front" style={styles.camera} />
-        <Button title="Take Photo" onPress={handleCapture} />
-      </CameraPermissionsGuard>
+      <CameraView
+        ref={cameraRef}
+        facing="front"
+        style={StyleSheet.absoluteFill}
+      />
+
+      <View style={styles.shutterContainer}>
+        <Button size="lg" onPress={handleCapture}>
+          <ButtonText className="font-bold">Take Photo</ButtonText>
+        </Button>
+      </View>
     </View>
   );
 };
@@ -32,12 +38,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  camera: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
+  shutterContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
 });
